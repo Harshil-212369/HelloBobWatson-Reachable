@@ -15,6 +15,8 @@ IBM Bob 2.0 was used to design, plan, and build every layer of Reachable.
 
 **Custom Skill** — a `bob-session-export` skill was created at `HelloBobWatson/.bob/skills/bob-session-export.md` to encode the per-session export workflow as reusable procedural memory. This skill fires at the end of each work session and guides the export, naming convention, commit, and push steps — ensuring the required deliverable (exported Bob report of all relevant sessions) is never missed.
 
+**Check Family C (Economic Liveness)** — extends Bob's self-documenting audit trail into cost attribution. Every NOT LIVE finding is annotated with the Bobcoin spend on that change: agentic work billed at cost that produced zero runtime effect. Family C reads the Bob session export to attribute spend. When the export contains no per-action cost data (V2/V3 verify-first checks did not pass), it emits `cost: UNCONFIRMED` rather than fabricating a figure — which is the project's own epistemic standard applied to economic signals. No watsonx.ai or watsonx Orchestrate is required.
+
 All Bob task session exports (Markdown format) are committed to `HelloBobWatson/docs/bob-sessions/` in the public repository, with one export file per meaningful work session.
 
 ---
