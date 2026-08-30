@@ -3,7 +3,7 @@
 
 ---
 
-IBM Bob 2.0 was used to design, plan, and build every layer of Reachable.
+IBM Bob 2.0 was used throughout the design and build of Reachable.
 
 **Plan Mode** was used to architect the three-verdict system (NOT LIVE / UNCONFIRMED / LIVE), determine which check families belong to deterministic scripts versus AI inference, and sequence the Tier 1 build order before any code was written. The session export from this planning session is included in the repository under `HelloBobWatson/docs/bob-sessions/`.
 
