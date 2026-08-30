@@ -4,8 +4,6 @@ family_b.py - Check Family B: Registration Liveness (DETERMINISTIC given schema)
 Checks:
   B1 - Missing or malformed YAML frontmatter in skill/agent files
   B2 - File placed in a directory the runtime does not scan
-  B3 - Load-bearing file is gitignored (shared with A5; surfaces in Family B
-       report context as a registration failure, not just a git failure)
 
 All output ASCII-only (Windows PowerShell 5.1 constraint).
 """
@@ -20,14 +18,12 @@ from reachable.checks.runner import Finding, NOT_LIVE, UNCONFIRMED
 # A file in alt_dirs but NOT in expected_dir triggers B2.
 # ---------------------------------------------------------------------------
 SCANNER_CONVENTIONS = [
-    # Claude Code / Bob: scans skills/ at repo root
     {
         "framework": "Claude/Bob skill",
         "expected_dirs": ["skills"],
         "shadow_dirs": [".claude/skills", ".bob/skills", "skill"],
         "file_patterns": [".md", ".yaml", ".yml"],
     },
-    # Generic agent manifest: looks for agents/ or agent/
     {
         "framework": "generic agent",
         "expected_dirs": ["agents", "agent"],
@@ -36,34 +32,33 @@ SCANNER_CONVENTIONS = [
     },
 ]
 
+# Directories that are never load-bearing
+_SKIP_DIRS = {
+    "__pycache__", ".tox", ".eggs", "node_modules",
+    ".venv", "venv", "env", "build", "dist", ".git",
+}
+
+# Directories that are considered skill/agent registries
+SKILL_DIRS = {"skills", ".bob/skills", ".claude/skills", "agents", "agent"}
+
 
 def _has_yaml_frontmatter(filepath):
-    """
-    Return True if the file starts with a valid YAML frontmatter block (---).
-    Returns False if absent or malformed.
-    """
+    """Return True if the file starts with a valid YAML frontmatter block."""
     try:
         with open(filepath, "r", encoding="utf-8", errors="replace") as f:
             first_line = f.readline().rstrip()
             if first_line != "---":
                 return False
-            # Scan for closing ---
             for line in f:
                 if line.rstrip() == "---":
                     return True
-            return False  # Opening --- found but no closing ---
+            return False
     except (IOError, OSError):
         return False
 
 
-# Directories that are considered skill/agent registries
-SKILL_DIRS = {"skills", ".bob/skills", ".claude/skills", "agents", "agent"}
-
 def _is_skill_file(path):
-    """
-    Return True only if the file is inside a known skill/agent directory.
-    Avoids false-positives on docs files that happen to mention 'skills'.
-    """
+    """Return True only if the file is inside a known skill/agent directory."""
     lower = path.replace("\\", "/").lower()
     return (
         any(lower.startswith(d + "/") or ("/" + d + "/") in lower
@@ -72,25 +67,33 @@ def _is_skill_file(path):
     )
 
 
-def _git_check_ignore(repo_root, rel_path):
-    """Return True if the file is gitignored."""
+def _dir_is_gitignored(repo_root, dirpath, d):
+    """Return True if directory d inside dirpath is gitignored."""
+    rel = os.path.relpath(os.path.join(dirpath, d), repo_root)
     result = subprocess.run(
-        ["git", "check-ignore", "-q", "--", rel_path],
-        cwd=repo_root,
-        capture_output=True,
+        ["git", "check-ignore", "-q", "--", rel],
+        cwd=repo_root, capture_output=True,
     )
     return result.returncode == 0
 
 
+def _prune_dirs(dirnames, repo_root, dirpath):
+    """Remove artifact dirs and gitignored dirs from os.walk dirnames in-place."""
+    return [
+        d for d in dirnames
+        if d not in _SKIP_DIRS
+        and not _dir_is_gitignored(repo_root, dirpath, d)
+    ]
+
+
 # ---------------------------------------------------------------------------
 # B1 - Missing or malformed YAML frontmatter
-# Incident 3: skills committed to correct directory but never indexed because
-# the YAML frontmatter block was absent. The installer exited 0.
+# Incident 3: installer exited 0 but skill was never indexed (no frontmatter).
 # ---------------------------------------------------------------------------
 def check_b1_missing_frontmatter(repo_root):
     findings = []
     for dirpath, dirnames, filenames in os.walk(repo_root):
-        dirnames[:] = [d for d in dirnames if d != ".git"]
+        dirnames[:] = _prune_dirs(dirnames, repo_root, dirpath)
         for fname in filenames:
             if not fname.endswith((".md", ".yaml", ".yml")):
                 continue
@@ -125,21 +128,15 @@ def check_b1_missing_frontmatter(repo_root):
 def check_b2_wrong_directory(repo_root):
     findings = []
     for convention in SCANNER_CONVENTIONS:
-        expected = convention["expected_dirs"]
-        shadow   = convention["shadow_dirs"]
-        patterns = convention["file_patterns"]
+        expected  = convention["expected_dirs"]
+        shadow    = convention["shadow_dirs"]
+        patterns  = convention["file_patterns"]
         framework = convention["framework"]
 
-        # Collect files in shadow dirs
         for dirpath, dirnames, filenames in os.walk(repo_root):
-            dirnames[:] = [
-                d for d in dirnames
-                if d not in _B_SKIP_DIRS
-                and not _dir_is_gitignored(repo_root, dirpath, d)
-            ]
+            dirnames[:] = _prune_dirs(dirnames, repo_root, dirpath)
             rel_dir = os.path.relpath(dirpath, repo_root).replace("\\", "/")
 
-            # Is this path inside a shadow dir?
             in_shadow = any(
                 rel_dir == s or rel_dir.startswith(s + "/")
                 for s in shadow
