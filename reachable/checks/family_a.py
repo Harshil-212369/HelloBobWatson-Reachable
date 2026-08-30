@@ -185,12 +185,24 @@ def check_a5_gitignored(repo_root):
     """
     Walk the repo and call git check-ignore on every file that looks
     load-bearing. If git check-ignore exits 0 the file is ignored.
-    Skips generated/cached artifact directories (e.g. __pycache__).
+    Skips generated/cached artifact directories and entire directories
+    that are themselves gitignored (e.g. demo-fixtures/).
     """
     findings = []
     for dirpath, dirnames, filenames in os.walk(repo_root):
         # Skip .git and known artifact dirs
         dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+
+        # Skip any subdirectory that is itself gitignored
+        # (avoids recursing into demo-fixtures/, node_modules/ added after gitignore, etc.)
+        pruned = []
+        for d in dirnames:
+            rel_dir = os.path.relpath(os.path.join(dirpath, d), repo_root)
+            _, _, rc = _git(["check-ignore", "-q", "--", rel_dir], cwd=repo_root)
+            if rc != 0:  # Not ignored: keep
+                pruned.append(d)
+        dirnames[:] = pruned
+
         for fname in filenames:
             if not _is_load_bearing(fname):
                 continue

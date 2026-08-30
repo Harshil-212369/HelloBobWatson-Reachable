@@ -83,6 +83,7 @@ def main():
         from reachable.checks.runner   import CheckRunner
         from reachable.checks.family_a import FAMILY_A_CHECKS
         from reachable.checks.family_b import FAMILY_B_CHECKS
+        from reachable.checks.family_c import annotate_with_cost
     except ImportError as e:
         sys.stderr.write("ERROR: failed to import checks: {e}\n".format(e=e))
         sys.exit(2)
@@ -96,6 +97,15 @@ def main():
     print("Running Family B (registration liveness)...")
     for check in FAMILY_B_CHECKS:
         runner.run(check)
+
+    # Family C: annotate NOT LIVE findings with economic cost data.
+    # If annotation fails for any reason, A+B output is unchanged.
+    try:
+        print("Running Family C (economic liveness annotation)...")
+        runner.findings = annotate_with_cost(runner.findings, repo_root)
+    except Exception as exc:
+        sys.stderr.write(
+            "WARNING: Family C annotation failed: {e}\n".format(e=exc))
 
     print("")
     print(runner.report())
