@@ -132,7 +132,11 @@ def check_b2_wrong_directory(repo_root):
 
         # Collect files in shadow dirs
         for dirpath, dirnames, filenames in os.walk(repo_root):
-            dirnames[:] = [d for d in dirnames if d != ".git"]
+            dirnames[:] = [
+                d for d in dirnames
+                if d not in _B_SKIP_DIRS
+                and not _dir_is_gitignored(repo_root, dirpath, d)
+            ]
             rel_dir = os.path.relpath(dirpath, repo_root).replace("\\", "/")
 
             # Is this path inside a shadow dir?
