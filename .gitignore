@@ -1,0 +1,45 @@
+# Credentials and secrets
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+credentials/
+*apikey*
+*api_key*
+*secret*
+
+# IBM Cloud / watsonx credentials
+ibm_credentials.env
+ibmcloud_api_key*
+watsonx_api_key*
+
+# Python build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.tox/
+
+# Node / JS
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# OS / editor artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/settings.json

@@ -1,0 +1,62 @@
+# Prevent Bob from reading credential files and bloating context with
+# large binary/generated files irrelevant to the liveness checker.
+# Assumed syntax: gitignore glob (gitwildmatch) - VERIFY before adding complex patterns.
+
+# Credentials and secrets
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+credentials/
+*apikey*
+*api_key*
+*secret*
+
+# IBM Cloud / watsonx credentials
+ibm_credentials.env
+ibmcloud_api_key*
+watsonx_api_key*
+
+# Python build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+build/
+dist/
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.tox/
+
+# Node / JS
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Source PDFs - Bob reads the markdown summaries in docs/ instead
+HelloBobWatson/Background/*.pdf
+Dev Day Hackathon Offical Rules.pdf
+
+# Source TXT files from IBM YouTube - Bob reads docs/ summaries instead
+IBM_Youtube/
+
+# OS / editor artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/settings.json
+
+# Git internals
+.git/
+
+# Test fixtures - intentionally broken repos, large and noisy
+# Uncomment when fixture dirs are created:
+# reachable/tests/fixtures/

@@ -1,0 +1,72 @@
+# 03 — IBM Bob + watsonx Orchestrate ADK Primer (Project Knowledge)
+ 
+## What IBM Bob is
+An **agentic AI IDE** / "AI SDLC partner" — not an autocomplete tool. Went generally available April 28, 2026. It plugs into VS Code. IBM's pitch is enterprise modernization: Java, IBM i / RPG, and mainframe — understanding, documenting, and refactoring code that has been in production for 20 years.
+ 
+### The three modes — know these cold, they will come up
+| Mode | Purpose | Writes code? |
+|---|---|---|
+| **Ask** | Understand concepts, analyze existing code, get your bearings in an unfamiliar codebase | **No** — read-only |
+| **Plan** | Think through architecture, produce a technical plan before implementation | **No** — nothing gets written until you approve the plan |
+| **Agent** | Take the idea/plan and build it — implement features, fix bugs, refactor | **Yes** |
+ 
+**The architectural point worth making out loud:** the mode separation *is* the safety harness. It enforces a human checkpoint before the agent acts. That framing — "guardrails as workflow, not as a filter" — is the kind of thing that lands well with IBM people.
+ 
+### Other Bob concepts
+- **Bobcoins** — the consumption/billing unit. Abstracts token usage into a predictable metric. Trial = 40 Bobcoins / 30 days. Tracked via the gauge in the top-right of the Bob panel, in Settings → General, or in **Bobalytics**.
+- **Bob Shell** — same agent capabilities at the terminal / in CI, not just the IDE.
+- **MCP** — Bob supports Model Context Protocol servers, same protocol Claude Code and Cursor use. This is your bridge: **any MCP server you can build, Bob can consume.**
+- **Subagents** — parallel task decomposition.
+- **Skills** — extend Bob with specialized knowledge/behaviour.
+- **Premium Packages** — platform-specific add-ons (Java, IBM i, Z mainframe).
+- **Multi-model orchestration** — Bob routes tasks to different underlying models (Claude, Granite, Mistral, Llama) based on the job.
+---
+ 
+## The watsonx Orchestrate ADK
+Separate thing from the Bob IDE. A **Python library + `orchestrate` CLI** for building and deploying AI agents.
+ 
+### Get it running (do this before Thursday — WSL)
+```bash
+# Docker Desktop must be running with WSL2 backend enabled
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install ibm-watsonx-orchestrate
+orchestrate --help
+```
+ 
+### The core CLI flow
+```bash
+orchestrate env activate local          # point at the local Developer Edition
+orchestrate tools import -k python -f my_tool.py -r requirements.txt
+orchestrate agents import -f my-agent.yaml
+orchestrate chat start                  # UI at http://localhost:4321
+```
+ 
+### The CLI command groups
+| Command | What it manages |
+|---|---|
+| `env` | Which environment you're targeting — local server or a production instance |
+| `agents` | Agents in the active env |
+| `tools` | Tools in the active env |
+| `toolkits` | Toolkits |
+| `knowledge-bases` | Knowledge your agents can search |
+| `connections` | Auth connections to external systems |
+ 
+### The mental model
+An **agent** (defined in YAML) has a description, an LLM, and a set of **tools** (Python functions you import). The agent decides which tool to call based on the user's request. A **knowledge base** gives it documents to search. **Connections** give it credentials to reach external systems.
+ 
+That's it. If you understand *tool → agent → env → chat*, you can build in the lab.
+ 
+---
+ 
+## Prep checklist — today and tomorrow
+ 
+- [ ] IBMid created, Bob IDE installed, signed in, trial active (Settings → General shows Budget 40.00, no expired banner)
+- [ ] Docker Desktop running with WSL2 integration
+- [ ] `pip install ibm-watsonx-orchestrate` succeeds, `orchestrate --help` responds
+- [ ] Developer Edition comes up locally (`orchestrate env activate local`)
+- [ ] One hello-world Python tool imported successfully
+- [ ] One agent YAML imported successfully
+- [ ] Chat UI reachable at localhost:4321
+- [ ] Laptop charger packed
+**If you get through this checklist, you will be ahead of most of the room** — and you'll spend the lab building instead of fighting Docker.

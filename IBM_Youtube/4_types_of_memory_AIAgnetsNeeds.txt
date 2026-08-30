@@ -1,0 +1,10 @@
+comprehensive summary of the content, structured by the four types of AI agent memory discussed by Martin Keen.
+
+The Four Types of AI Agent Memory
+Inspired by the Koala framework from a Princeton research team, well-designed AI agents utilize four distinct memory architectures (1:46):
+
+Working Memory (1:59): Often called the context window, this functions like RAM. It is fast and immediately accessible but volatile; information is lost once the session ends (2:43). It holds the current conversation, system instructions, and any loaded files (2:15).
+Semantic Memory (3:25): This serves as the agent's persistent knowledge base, storing facts, rules, and documentation (3:29). In production, this is often implemented as simple Markdown files (like claude.md) that are injected into the context window at the start of a session (3:52).
+Procedural Memory (4:52): This defines how an agent performs tasks. Using an open standard called Agent Skills (skill.md), agents use "progressive disclosure" (5:31). Instead of loading all instructions at once, they index skills and pull in specific instructions or scripts only when needed to save context window space (5:50).
+Episodic Memory (6:38): This records past interactions and experiences. Rather than storing entire transcripts, production systems use distillation to compress past experiences into useful "notes" or lessons (7:05), helping the agent improve over time and avoid repeating past mistakes (7:45).
+Agent Complexity: Not all agents need every type of memory. A simple reflex agent may only require Working Memory, while a sophisticated coding agent typically requires all four to handle persistent project knowledge, skills, and past debugging experiences (8:32).
